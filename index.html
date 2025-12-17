@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE MACHINA SORTIS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Roboto+Condensed:wght@400;700&display=swap');
+
+        /* --- Color Variables & Fonts --- */
+        :root {
+            --color-black: #000;
+            --color-near-black: #08081a;
+            --color-bg-dark: #0f0f1e;
+            --color-red: #ff4141; /* Player 1 */
+            --color-blue: #41f2ff; /* Player 2 */
+            --color-violet: #a78bfa; /* Icon Outline & Text */
+            --color-green: #3cb371; /* Roll Button */
+            --color-text: #f3f4f6;
+            --color-white-glow: rgba(255, 255, 255, 0.8);
+            --color-violet-glow: rgba(167, 139, 250, 0.8);
+        }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Condensed', 'Orbitron', sans-serif;
+            background: var(--color-black); color: var(--color-text); min-height: 100vh; padding: 20px;
+            background-image: radial-gradient(circle at 15% 50%, rgba(30, 0, 60, 0.4) 0%, transparent 40%),
+                              radial-gradient(circle at 85% 60%, rgba(60, 0, 0, 0.3) 0%, transparent 35%);
+            background-color: var(--color-near-black);
+        }
+
+        .container {
+            max-width: 1400px; margin: 0 auto; background: rgba(5, 5, 15, 0.95); backdrop-filter: blur(8px);
+            border-radius: 25px; padding: 40px; box-shadow: 0 0 60px rgba(0, 0, 0, 0.8), 0 0 120px rgba(255, 65, 65, 0.15);
+            border: 3px solid rgba(255, 65, 65, 0.3);
+        }
+        
+        /* --- Thematic Header (unchanged) --- */
+        .thematic-header { text-align: center; margin-bottom: 30px; }
+        .thematic-header h1 { font-family: 'Orbitron', sans-serif; font-size: 5em; margin-bottom: 15px; background: linear-gradient(90deg, var(--color-red), var(--color-text), var(--color-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: 0 0 20px rgba(255, 65, 65, 0.6), 0 0 20px rgba(65, 242, 255, 0.6); letter-spacing: 5px; line-height: 1.1; }
+        .thematic-tagline { font-family: 'Roboto Condensed', sans-serif; color: #ccc; margin-top: -10px; font-size: 1em; letter-spacing: 2px; text-transform: uppercase; }
+        .tag-box { display: inline-block; padding: 2px 8px; border: 1px solid var(--color-violet); background: rgba(167, 139, 250, 0.1); border-radius: 3px; font-size: 0.9em; color: var(--color-violet); margin-left: 5px; }
+
+        /* --- Matchup Display (unchanged) --- */
+        .matchup-display { display: grid; grid-template-columns: 1fr auto 1fr; gap: 30px; align-items: center; }
+        .player-selection { background: rgba(15, 15, 30, 0.8); padding: 30px 20px; border-radius: 20px; text-align: center; min-height: 160px; display: flex; flex-direction: column; justify-content: center; }
+        .player-selection.red { border: 3px solid var(--color-red); box-shadow: 0 0 30px rgba(255, 65, 65, 0.7); }
+        .player-selection.blue { border: 3px solid var(--color-blue); box-shadow: 0 0 30px rgba(65, 242, 255, 0.7); }
+        .player-faction { font-family: 'Orbitron', sans-serif; font-size: 3.5em; font-weight: 900; color: var(--color-text); text-transform: uppercase; transition: all 0.5s ease; text-shadow: 0 0 20px var(--color-white-glow); line-height: 1.2; }
+        .vs-divider { font-family: 'Orbitron', sans-serif; font-size: 3.5em; font-weight: bold; color: #6b7280; text-shadow: 0 0 10px rgba(255, 255, 255, 0.1); }
+
+        /* --- Controls Bar & Veto (unchanged) --- */
+        .controls-wrapper { margin-top: 30px; display: flex; flex-direction: column; gap: 20px; }
+        .controls-bar { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; }
+        .veto-controls-group { display: flex; align-items: flex-end; gap: 5px; }
+        .filter-label { font-family: 'Orbitron', sans-serif; color: var(--color-text); font-weight: bold; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1px; margin-bottom: 3px; }
+        select { background: var(--color-bg-dark); color: var(--color-text); border: 1px solid var(--color-red); padding: 8px; border-radius: 6px; font-size: 0.9em; cursor: pointer; outline: none; box-shadow: 0 0 10px rgba(255, 65, 65, 0.2); appearance: none; background-image: url('data:image/svg+xml;utf8,<svg fill="%23fff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); background-repeat: no-repeat; background-position: right 8px center; padding-right: 30px; min-width: 150px; }
+        select.red-veto { border-color: var(--color-red); box-shadow: 0 0 10px rgba(255, 65, 65, 0.3); }
+        select.blue-veto { border-color: var(--color-blue); box-shadow: 0 0 10px rgba(65, 242, 255, 0.3); }
+        .clear-veto-button { background: #4b5563; color: var(--color-text); border: none; padding: 8px 10px; font-size: 0.9em; border-radius: 4px; cursor: pointer; transition: all 0.3s ease; font-weight: bold; }
+        .clear-veto-button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Roll Button (unchanged) */
+        button#rollButton { background: linear-gradient(135deg, #48c484, var(--color-green)); color: white; border: 2px solid var(--color-text); padding: 15px 40px; font-size: 1.4em; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 3px; font-weight: 900; box-shadow: 0 0 30px rgba(60, 179, 113, 0.9); width: 100%; }
+        button#rollButton:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(60, 179, 113, 1); }
+        button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; border-color: #6b7280; }
+
+
+        /* --- Rite of the Bellicose Variable (Size Filter Icons - FINAL REDESIGN) --- */
+        .rite-of-bellicose { text-align: center; }
+        .rite-of-bellicose .filter-label { font-family: 'Orbitron', sans-serif; font-size: 1.5em; color: var(--color-text); margin-bottom: 10px; text-shadow: 0 0 5px var(--color-text); } /* Enhanced label for visibility */
+        .size-icons { display: flex; justify-content: center; align-items: center; gap: 30px; padding-bottom: 0; }
+        
+        .size-icon {
+            width: 70px; height: 70px; background: none; 
+            cursor: pointer; transition: all 0.2s ease; position: relative;
+            background-color: transparent; border: none;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* The Custom Glowing Outline Container */
+        .size-icon-outline {
+            position: absolute; width: 100%; height: 100%; 
+            /* Core Glowing Border Effect */
+            border: 5px solid var(--color-violet); 
+            box-shadow: 0 0 10px var(--color-violet-glow), 0 0 2px var(--color-violet-glow) inset;
+            background-color: transparent;
+            transition: all 0.2s ease;
+        }
+
+        /* Triangle (Size 3) Specifics */
+        .size-icon-triangle .size-icon-outline {
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%); 
+            border-radius: 5px; /* Subtle rounding for the glow effect */
+        }
+
+        /* Square (Size 4) Specifics */
+        .size-icon-square .size-icon-outline { border-radius: 5px; }
+
+        /* Circle (Size ALL) Specifics */
+        .size-icon-circle .size-icon-outline { border-radius: 50%; }
+
+
+        /* Text Label (Always Positioned at Center) */
+        .size-icon-label {
+            position: absolute; 
+            color: var(--color-violet); 
+            font-size: 1.8em; font-weight: 900;
+            z-index: 2;
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.2s ease;
+            text-shadow: 0 0 5px var(--color-violet); /* Text glow */
+        }
+        .size-icon-circle .size-icon-label { font-size: 1.4em; } /* Smaller font for ALL */
+
+        /* --- ACTIVE STATE LOGIC --- */
+
+        /* When any icon is active, its label becomes visible and the glow enhances */
+        .size-icon.active .size-icon-label { opacity: 1; }
+        .size-icon.active .size-icon-outline { 
+            /* Increase glow slightly when active */
+            box-shadow: 0 0 15px var(--color-violet), 0 0 5px var(--color-violet) inset;
+        }
+        
+        /* The ALL icon is the only one that appears to have an internal color/fill when active in the original image */
+        .size-icon-circle.active .size-icon-outline {
+             /* Stronger effect for the ALL button when active (Simulating the deeper purple) */
+             background-color: rgba(167, 139, 250, 0.2); 
+             border-color: var(--color-violet);
+        }
+        .size-icon-circle.active { transform: scale(1.05); }
+
+
+        /* --- CLIQUE LIST (unchanged) --- */
+        .clique-row { background: rgba(15, 15, 30, 0.6); border-radius: 10px; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s ease-out; display: grid; grid-template-columns: 100px repeat(4, 1fr); gap: 8px; align-items: center; }
+        .clique-row[data-size="3"] { grid-template-columns: 100px repeat(3, 1fr); }
+        .clique-row.rolling { opacity: 0.9; transform: scale(1.005); border-color: rgba(255, 255, 255, 0.4); animation: pulse-border 0.2s ease-in-out infinite alternate; }
+        .clique-size-info { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .clique-number { font-family: 'Orbitron', sans-serif; font-size: 1.5em; font-weight: 900; color: #6b7280; text-align: center; }
+        .clique-size-badge { background: rgba(139, 92, 246, 0.3); color: var(--color-violet); border: 1px solid rgba(139, 92, 246, 0.5); padding: 2px 8px; border-radius: 8px; font-size: 0.7em; font-weight: bold; margin-top: 5px; text-transform: uppercase; }
+        .clique-row.selected-violet { transform: scale(1.01); background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(109, 40, 217, 0.2)); border: 3px solid var(--color-violet); box-shadow: 0 0 40px rgba(139, 92, 246, 0.7); z-index: 10; }
+        .selected-violet .clique-number { color: var(--color-text); animation: pulse-text 1s ease-in-out infinite alternate; }
+        .faction-cell { background: rgba(30, 30, 50, 0.9); padding: 10px 5px; border-radius: 5px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); height: 100%; display: flex; align-items: center; justify-content: center; }
+        .faction-cell.player1-selected { background: linear-gradient(45deg, var(--color-red), #990000) !important; border: 3px solid var(--color-text) !important; transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 65, 65, 1); }
+        .faction-cell.player2-selected { background: linear-gradient(45deg, var(--color-blue), #009999) !important; border: 3px solid var(--color-text) !important; transform: scale(1.05); box-shadow: 0 0 25px rgba(65, 242, 255, 1); }
+        .faction-name { font-size: 0.9em; font-weight: 700; color: var(--color-text); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        /* Media Queries (unchanged) */
+        @media (max-width: 1100px) {
+            .controls-bar { flex-direction: column; align-items: center; gap: 15px; }
+            .left-controls, .right-controls { justify-content: center; width: 100%; }
+            .rite-of-bellicose { order: -1; margin-bottom: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Thematic Header -->
+        <div class="thematic-header">
+            <div class="thematic-tagline">WAR MATCHUP PROTOCOL V2.1 // <span class="tag-box">THE ALGORITHM OF MARS</span></div>
+            <h1>THE MACHINA SORTIS</h1>
+        </div>
+        
+        <!-- Matchup Display (Princeps/Sequentia) -->
+        <div class="matchup-display">
+            <div class="player-selection red">
+                <div class="player-faction" id="player1-faction">PRINCEPS</div>
+            </div>
+            <div class="vs-divider">VS</div>
+            <div class="player-selection blue">
+                <div class="player-faction" id="player2-faction">SEQUENTIA</div>
+            </div>
+        </div>
+
+        <!-- Controls Wrapper -->
+        <div class="controls-wrapper">
+            <div class="controls-bar">
+                <!-- Player 1 Veto -->
+                <div class="veto-controls-group">
+                    <select id="vetoFactionRed" class="red-veto" onchange="applyVeto('red')">
+                        <option value="">-- No Veto</option>
+                    </select>
+                    <button id="clearVetoRed" class="clear-veto-button" onclick="clearVeto('red')" disabled>Clear</button>
+                </div>
+                
+                <!-- Center Controls: Rite of the Bellicose Variable (Size Filter) -->
+                <div class="rite-of-bellicose">
+                    <div class="filter-label">RITE OF THE BELLICOSE VARIABLE:</div>
+                    <div class="size-icons">
+                        <!-- Size 3 Icon: Triangle -->
+                        <button class="size-icon size-icon-triangle" data-size="3" onclick="filterCliques('3', this)">
+                            <div class="size-icon-outline"></div>
+                            <div class="size-icon-label">3</div>
+                        </button>
+                        <!-- Size 4 Icon: Square -->
+                        <button class="size-icon size-icon-square" data-size="4" onclick="filterCliques('4', this)">
+                            <div class="size-icon-outline"></div>
+                            <div class="size-icon-label">4</div>
+                        </button>
+                        <!-- Size ALL Icon: Circle (Default/Initial state is ALL active) -->
+                        <button class="size-icon size-icon-circle active all" data-size="all" onclick="filterCliques('all', this)">
+                            <div class="size-icon-outline"></div>
+                            <div class="size-icon-label">ALL</div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Player 2 Veto -->
+                <div class="veto-controls-group">
+                    <select id="vetoFactionBlue" class="blue-veto" onchange="applyVeto('blue')">
+                        <option value="">-- No Veto</option>
+                    </select>
+                    <button id="clearVetoBlue" class="clear-veto-button" onclick="clearVeto('blue')" disabled>Clear</button>
+                </div>
+            </div>
+            
+            <!-- Roll Button: RECITE THE LITANY OF EQUAL MEASURE -->
+            <button id="rollButton" onclick="rollForMatchup()">RECITE THE LITANY OF EQUAL MEASURE</button>
+        </div>
+        
+        <!-- Cliques List -->
+        <div class="cliques-list" id="cliquesList">
+            <!-- Cliques will be generated here -->
+        </div>
+    </div>
+
+    <script>
+        // Data (unchanged)
+        const cliques4 = [
+            ["Adepta Sororitas", "Blood Angels", "Dark Angels", "Deathwatch"], ["Adepta Sororitas", "Blood Angels", "Emperor's Children", "World Eaters"], ["Adepta Sororitas", "Black Templars", "Emperor's Children", "Grey Knights"], ["Adepta Sororitas", "Blood Angels", "Drukhari", "Emperor's Children"], ["Adeptus Custodes", "Black Templars", "Chaos Space Marines", "Grey Knights"], ["Adeptus Custodes", "Dark Angels", "Death Guard", "Grey Knights"], ["Adeptus Custodes", "Chaos Space Marines", "T'au", "World Eaters"], ["Adeptus Custodes", "Emperor's Children", "World Eaters", "Deathwatch"], ["Adeptus Custodes", "Black Templars", "Deathwatch", "Necrons"], ["Adeptus Mechanicus", "Imperial Knights", "Leagues Of Votann", "Thousand Sons"], ["Aeldari", "Chaos Space Marines", "Space Marines", "Space Wolves"], ["Astra Militarum", "Adeptus Custodes", "Black Templars", "Necrons"], ["Astra Militarum", "Black Templars", "Leagues Of Votann", "Orks"], ["Death Guard", "Grey Knights", "Thousand Sons", "Tyranids"],
+        ];
+
+        const cliques3 = [
+            ["Adepta Sororitas", "Chaos Knights", "T'au"], ["Adepta Sororitas", "Adeptus Custodes", "Chaos Knights"], ["Adepta Sororitas", "Chaos Daemons", "Imperial Knights"], ["Adeptus Custodes", "Aeldari", "Dark Angels"], ["Adeptus Custodes", "Death Guard", "Tyranids"], ["Adeptus Mechanicus", "Astra Militarum", "Leagues Of Votann"], ["Adeptus Mechanicus", "Orks", "Tyranids"], ["Aeldari", "Astra Militarum", "Chaos Daemons"], ["Aeldari", "Imperial Knights", "Leagues Of Votann"], ["Aeldari", "Space Wolves", "T'au"], ["Aeldari", "Tyranids", "Drukhari"], ["Black Templars", "Necrons", "World Eaters"], ["Blood Angels", "Emperor's Children", "Space Marines"], ["Blood Angels", "Space Marines", "World Eaters"], ["Chaos Space Marines", "Orks", "Space Marines"], ["Chaos Space Marines", "T'au", "Tyranids"], ["Dark Angels", "Imperial Knights", "T'au"], ["Dark Angels", "Space Marines", "Thousand Sons"], ["Death Guard", "Drukhari", "Genestealer Cults"], ["Death Guard", "Necrons", "Orks"], ["Deathwatch", "Necrons", "World Eaters"], ["Drukhari", "Leagues Of Votann", "Thousand Sons"], ["Emperor's Children", "T'au", "Tyranids"], ["Genestealer Cults", "Chaos Daemons", "Deathwatch"], ["Imperial Knights", "T'au", "Tyranids"]
+        ];
+        
+        let allCliques = [];
+        let allFactions = new Set();
+        let currentSelectedCliqueId = null;
+        let isRolling = false;
+        let currentFilterSize = 'all';
+        let vetoFactions = { red: '', blue: '' };
+
+        /* --- Initialization and Data Prep --- */
+
+        function prepareCliques() {
+            let combined = [];
+            cliques4.forEach((c, i) => { combined.push({ factions: c, size: 4, id: `4-${i}`, index: combined.length }); c.forEach(f => allFactions.add(f)); });
+            cliques3.forEach((c, i) => { combined.push({ factions: c, size: 3, id: `3-${i}`, index: combined.length }); c.forEach(f => allFactions.add(f)); });
+            allCliques = combined;
+        }
+
+        function populateVetoDropdowns() {
+            const factions = Array.from(allFactions).sort();
+            ['Red', 'Blue'].forEach(color => {
+                const select = document.getElementById(`vetoFaction${color}`);
+                select.options.length = 1; 
+                factions.forEach(faction => {
+                    const option = document.createElement('option');
+                    option.value = faction;
+                    option.textContent = faction;
+                    select.appendChild(option);
+                });
+            });
+        }
+        
+        /* --- Rendering and Filtering (unchanged) --- */
+
+        function renderCliques() {
+            const listDiv = document.getElementById('cliquesList');
+            let currentCliqueNumber = 1;
+            
+            listDiv.innerHTML = allCliques.map((clique, index) => {
+                const passesSizeFilter = currentFilterSize === 'all' || clique.size === parseInt(currentFilterSize);
+                const isVisible = passesSizeFilter;
+                const displayStyle = isVisible ? '' : 'style="display: none;"';
+                const numberToDisplay = isVisible ? currentCliqueNumber++ : '';
+
+                return `
+                    <div class="clique-row" id="clique-row-${clique.id}" data-size="${clique.size}" data-full-index="${clique.index}" ${displayStyle}>
+                        <div class="clique-size-info">
+                            <div class="clique-number">${numberToDisplay}</div>
+                            <div class="clique-size-badge">Size ${clique.size}</div>
+                        </div>
+                        ${clique.factions.map((faction, fIndex) => `
+                            <div class="faction-cell" id="clique-cell-${clique.id}-${fIndex}" data-faction="${faction}">
+                                <div class="faction-name">${faction}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }).join('');
+            
+            clearPreviousSelection(false); 
+        }
+        
+        function filterCliques(size, button) {
+            if (isRolling) return;
+            currentFilterSize = size;
+            document.querySelectorAll('.size-icon').forEach(btn => btn.classList.remove('active', 'all'));
+            button.classList.add('active');
+            if (size === 'all') button.classList.add('all');
+            renderCliques();
+            clearPreviousSelection(true);
+        }
+        
+        function applyVeto(player) {
+            if (isRolling) return;
+            const color = player === 'red' ? 'Red' : 'Blue';
+            const select = document.getElementById(`vetoFaction${color}`);
+            const clearButton = document.getElementById(`clearVeto${color}`);
+            
+            vetoFactions[player] = select.value;
+            
+            select.options[0].textContent = vetoFactions[player] ? `[VETO] ${vetoFactions[player]}` : `-- No Veto`;
+            select.options[0].value = vetoFactions[player];
+            
+            clearButton.disabled = !vetoFactions[player];
+            
+            clearPreviousSelection(true); 
+        }
+        
+        function clearVeto(player) {
+            document.getElementById(`vetoFaction${player === 'red' ? 'Red' : 'Blue'}`).value = "";
+            applyVeto(player);
+        }
+
+        function clearPreviousSelection(clearMatchup = true) {
+            document.querySelectorAll('.clique-row').forEach(row => {
+                row.classList.remove('selected-violet', 'rolling');
+                row.querySelectorAll('.faction-cell').forEach(cell => {
+                    cell.classList.remove('player1-selected', 'player2-selected');
+                });
+            });
+            
+            if (clearMatchup) {
+                document.getElementById('player1-faction').textContent = 'PRINCEPS';
+                document.getElementById('player2-faction').textContent = 'SEQUENTIA';
+                currentSelectedCliqueId = null;
+            }
+        }
+
+        /* --- Rolling Logic (unchanged) --- */
+
+        async function rollForMatchup() {
+            if (isRolling) return;
+            isRolling = true;
+            document.getElementById('rollButton').disabled = true;
+
+            const visibleRows = Array.from(document.querySelectorAll('.clique-row:not([style*="display: none"])'));
+            const rollPool = visibleRows.map(row => allCliques[parseInt(row.dataset.fullIndex)]);
+
+            if (rollPool.length === 0) {
+                alert("The current size filter leaves no available cliques for rolling.");
+                isRolling = false;
+                document.getElementById('rollButton').disabled = false;
+                return;
+            }
+
+            clearPreviousSelection(false);
+            document.getElementById('player1-faction').textContent = '...ALLOCATING...';
+            document.getElementById('player2-faction').textContent = '...ALLOCATING...';
+
+            const rollDuration = 2000;
+            const startTime = Date.now();
+            
+            // Animation Loop
+            await new Promise(resolve => {
+                const rollInterval = setInterval(() => {
+                    if (Date.now() - startTime >= rollDuration) {
+                        clearInterval(rollInterval);
+                        resolve();
+                        return;
+                    }
+                    document.querySelectorAll('.clique-row.rolling').forEach(row => row.classList.remove('rolling'));
+                    if (visibleRows.length === 0) return;
+                    const startIndex = Math.floor(Math.random() * (visibleRows.length - 2));
+                    for (let i = 0; i < 3 && startIndex + i < visibleRows.length; i++) {
+                        visibleRows[startIndex + i].classList.add('rolling');
+                    }
+                }, 100);
+            });
+            
+            // Final Selection (Clique)
+            document.querySelectorAll('.clique-row.rolling').forEach(row => row.classList.remove('rolling'));
+            const selectedCliqueData = rollPool[Math.floor(Math.random() * rollPool.length)];
+            const cliqueId = selectedCliqueData.id;
+            currentSelectedCliqueId = cliqueId;
+
+            const selectedRow = document.getElementById(`clique-row-${cliqueId}`);
+            selectedRow.classList.add('selected-violet');
+            selectedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Final Selection (Factions with Veto Logic)
+            const factions = selectedCliqueData.factions;
+            const availableIndices = Array.from(factions.keys());
+            
+            let player1Index, player2Index;
+            
+            // P1 Draw (Red)
+            const p1Veto = vetoFactions.red;
+            const p1Candidates = availableIndices.filter(i => factions[i] !== p1Veto);
+            player1Index = p1Candidates[Math.floor(Math.random() * p1Candidates.length)];
+            
+            // P2 Draw (Blue) - Must be different from P1 AND not their veto
+            const p2Veto = vetoFactions.blue;
+            let p2Candidates = availableIndices.filter(i => i !== player1Index && factions[i] !== p2Veto);
+            if (p2Candidates.length === 0) {
+                p2Candidates = availableIndices.filter(i => i !== player1Index);
+            }
+            player2Index = p2Candidates[Math.floor(Math.random() * p2Candidates.length)];
+
+            const player1Faction = factions[player1Index];
+            const player2Faction = factions[player2Index];
+
+            // Reveal Factions
+            document.getElementById('player1-faction').textContent = player1Faction.toUpperCase();
+            document.getElementById('player2-faction').textContent = player2Faction.toUpperCase();
+            
+            document.getElementById(`clique-cell-${cliqueId}-${player1Index}`).classList.add('player1-selected');
+            document.getElementById(`clique-cell-${cliqueId}-${player2Index}`).classList.add('player2-selected');
+
+            isRolling = false;
+            document.getElementById('rollButton').disabled = false;
+        }
+
+        // Initialize on load
+        prepareCliques();
+        populateVetoDropdowns();
+        renderCliques();
+        // Set the correct initial active state
+        document.querySelector('.size-icon-circle').classList.add('active', 'all');
+    </script>
+</body>
+</html>
